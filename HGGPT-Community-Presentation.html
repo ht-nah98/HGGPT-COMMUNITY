@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HGGPT Community Sharing - Giới thiệu tính năng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-green: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --accent-orange: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --card-radius: 24px;
+            --container-max-width: 1300px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Standardized Sections */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px;
+            position: relative;
+            scroll-snap-align: start;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+
+        .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-green { background: var(--accent-green); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Animation Layer */
+        .slide-content {
+            width: 100%;
+            max-width: var(--container-max-width);
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .slide.active .slide-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Balanced Layout Containers */
+        .module-container {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .module-info { flex: 0.42; }
+        .module-visual { flex: 0.58; }
+
+        /* Typography Scopes */
+        .module-tag {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: #667eea;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 100px;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .module-title { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; }
+        .module-message {
+            font-size: 19px;
+            line-height: 1.6;
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .feature-list { list-style: none; }
+        .feature-list li {
+            padding: 12px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            font-size: 15px;
+            color: #d0d0d0;
+            line-height: 1.4;
+        }
+        .feature-list li::before { content: "•"; color: #667eea; font-weight: bold; font-size: 20px; line-height: 1; }
+
+        /* Precise Image Grid Layer */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .img-container {
+            background: #111;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            aspect-ratio: 16 / 10; /* Standardized Aspect Ratio */
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .img-container:hover {
+            transform: scale(1.03) translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            z-index: 20;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensuring grid is always solid */
+            transition: transform 0.6s ease;
+        }
+
+        .img-container:hover img { transform: scale(1.05); }
+
+        .gallery-label {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 15px 15px 10px;
+            font-size: 12px;
+            color: #fff;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .img-container:hover .gallery-label { opacity: 1; }
+
+        /* Feature Cards (Slide 2 & 19) */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius);
+            padding: 40px 30px;
+            transition: all 0.4s ease;
+            text-align: center;
+        }
+        .feature-card:hover { 
+            background: rgba(255,255,255,0.06); 
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-10px);
+        }
+
+        /* Cover Slide Graphics */
+        .cover { background: #000; }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+            pointer-events: none;
+        }
+        .orb-1 { width: 600px; height: 600px; background: #667eea; top: -10%; left: -10%; }
+        .orb-2 { width: 800px; height: 800px; background: #764ba2; bottom: -20%; right: -10%; animation-delay: -5s; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(40px, 60px); } }
+
+        /* Lightbox - High End */
+        #lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(15px);
+            cursor: zoom-out;
+        }
+        #lightbox img {
+            max-width: 85%;
+            max-height: 85%;
+            border-radius: 12px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        #lightbox.open img { transform: scale(1); }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+        }
+        .dot {
+            width: 4px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+        .dot.active { background: #667eea; height: 40px; }
+
+        .slide-number {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-family: 'Outfit';
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0.4;
+            letter-spacing: 0.1em;
+        }
+
+        /* Header Slide Styles */
+        .header-center { text-align: center; margin-bottom: 60px; }
+        .header-center h2 { font-size: 56px; margin-bottom: 16px; }
+        .header-center p { font-size: 20px; color: #888; max-width: 800px; margin: 0 auto; font-weight: 300; }
+
+        /* Stat Boxes */
+        .stat-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .stat-value { font-size: 40px; font-weight: 800; color: #667eea; margin-bottom: 8px; }
+        .stat-label { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Flow Process */
+        .flow-container { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+        .flow-step { flex: 1; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; }
+        .step-num { 
+            width: 40px; height: 40px; background: #667eea; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-weight: 800;
+            margin: 0 auto 15px;
+        }
+        .flow-arrow { color: #333; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+    </div>
+
+    <div class="nav-dots" id="navDots"></div>
+
+    <!-- Slide 1: Cover -->
+    <div class="slide cover active" id="slide1">
+        <div class="orb orb-1"></div><div class="orb orb-2"></div>
+        <div class="slide-content" style="text-align: center;">
+            <div class="module-tag" style="margin-bottom: 40px;">Bản trình chiếu v2.1</div>
+            <h1 style="font-size: 90px; margin-bottom: 20px; line-height: 1;"><span class="gradient-text">HGGPT</span><br>CHIA SẺ CỘNG ĐỒNG</h1>
+            <p style="font-size: 24px; font-weight: 300; color: #888; max-width: 800px; margin: 0 auto 50px;">Hệ sinh thái bồi đắp tri thức tự động cho HG Holding.</p>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <div style="padding: 12px 30px; border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 14px; font-weight: 600;">👨‍👩‍👧‍👦 Không gian chia sẻ kiến thức</div>
+                <div style="padding: 12px 30px; border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 14px; font-weight: 600;">💎 HG Coin, Donation</div>
+            </div>
+        </div>
+        <div class="slide-number">01 / 20</div>
+    </div>
+
+    <!-- Slide 2: Why? -->
+    <div class="slide" id="slide2">
+        <div class="slide-content">
+            <div class="header-center">
+                <h2>Sứ Mệnh <span class="gradient-text">Tri Thức</span></h2>
+                <p>Khám phá cách chúng tôi chuyển hóa từng cuộc hội thoại thành tài liệu doanh nghiệp.</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div style="font-size: 40px; margin-bottom: 20px;">🛡️</div>
+                    <h3>Sự bền vững</h3>
+                    <p style="color: #888; font-size: 14px; line-height: 1.6;">Lưu giữ tri thức mãi mãi, không còn trôi tin hay thất lạc dữ liệu.</p>
+                </div>
+                <div class="feature-card" style="border-color: rgba(102, 126, 234, 0.3);">
+                    <div style="font-size: 40px; margin-bottom: 20px;">🧠</div>
+                    <h3>Sự thông minh</h3>
+                    <p style="color: #888; font-size: 14px; line-height: 1.6;">AI tự động đúc kết Insight và hỗ trợ soạn thảo chuyên sâu.</p>
+                </div>
+                <div class="feature-card">
+                    <div style="font-size: 40px; margin-bottom: 20px;">🚀</div>
+                    <h3>Trao quyền</h3>
+                    <p style="color: #888; font-size: 14px; line-height: 1.6;">Khuyến khích chia sẻ qua cơ chế vinh danh và HG Coin và Donation.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">02 / 20</div>
+    </div>
+
+    <!-- Slide 3: Section User -->
+    <div class="slide cover" id="slide3">
+        <div class="slide-content" style="text-align: center;">
+            <h1 class="gradient-text" style="font-size: 120px; opacity: 0.1; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 100%;">TRẢI NGHIỆM THÀNH VIÊN</h1>
+            <div class="module-tag">Phần Một</div>
+            <h2 style="font-size: 72px;">Hành Trình <span class="gradient-text">Thành Viên</span></h2>
+            <p style="font-size: 20px; color: #666; margin-top: 20px;">Sáng tạo - Kết nối - Ghi nhận</p>
+        </div>
+        <div class="slide-number">03 / 20</div>
+    </div>
+
+    <!-- Slide 4: Space -->
+    <div class="slide" id="slide4">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag">KHÁM PHÁ</div>
+                    <h2 class="module-title">Giao diện <span class="gradient-text">Nhóm Chuyên Biệt</span></h2>
+                    <p class="module-message">Hệ thống phân nhóm giúp tri thức được đưa đúng nơi, đúng người.</p>
+                    <ul class="feature-list">
+                        <li><strong>Public Groups</strong>: Tự do tham gia và trao đổi kiến thức chung.</li>
+                        <li><strong>Private Groups</strong>: Bảo mật tuyệt đối cho các dự án nội bộ.</li>
+                        <li><strong>Thông tin</strong>: Xem danh sách chuyên gia tích cực trong nhóm.</li>
+                        <li><strong>Tìm kiếm</strong>: Tìm kiếm thông tin theo keyword.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Landing Page Community.png" alt="Landing Page"><div class="gallery-label">Feed Tổng hợp</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Nhóm Comunity: Private-Public.png" alt="Phân loại nhóm"><div class="gallery-label">Cấu trúc Nhóm</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Danh sách thành viên trong nhóm.png" alt="Thành viên"><div class="gallery-label">Đội ngũ chuyên gia</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Tìm kiếm nội dung tương quan - 4 nhóm.png" alt="Tìm kiếm"><div class="gallery-label">Tìm kiếm ngữ cảnh</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">04 / 20</div>
+    </div>
+
+    <!-- Slide 5: AI Creator -->
+    <div class="slide" id="slide5">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Ai hỗ trợ user viết bài.png" alt="AI gợi ý"><div class="gallery-label">Tìm kiếm thông tin trong community</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Ai hỗ trợ tạo title.png" alt="AI tạo tiêu đề"><div class="gallery-label">Sinh tiêu đề AI</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Ai hỗ trợ user viết bài 2.png" alt="AI soạn thảo"><div class="gallery-label">AI viết bài tạo nội dung</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Ai hỗ trợ user viết bài - đăng bài.png" alt="AI hoàn thiện"><div class="gallery-label">Hoàn thiện bài đăng và đăng bài</div></div>
+                    </div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag" style="color: #38ef7d;">SÁNG TẠO 01</div>
+                    <h2 class="module-title">Xây Dựng Nội Dung<br><span class="gradient-green">Cùng AI Assistant</span></h2>
+                    <p class="module-message">Giúp mọi nhân sự trở thành người chia sẻ kiến thức chuyên nghiệp.</p>
+                    <ul class="feature-list">
+                        <li>Tốc độ hóa việc viết lách với AI Drafting.</li>
+                        <li>Tối ưu hóa tiêu đề thu hút sự quan tâm.</li>
+                        <li>Đảm bảo nội dung đi đúng hướng với Community Bot.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">05 / 20</div>
+    </div>
+
+    <!-- Slide 6: Rich Editor -->
+    <div class="slide" id="slide6">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag">SÁNG TẠO 02</div>
+                    <h2 class="module-title">Công Cụ <span class="gradient-text">Soạn Thảo Chuyên Nghiệp</span></h2>
+                    <p class="module-message">Giao diện trực quan cho phép đính kèm đa phương tiện chỉ trong nháy mắt.</p>
+                    <ul class="feature-list">
+                        <li>Bộ công cụ thêm Ảnh, Video youtube và Tệp đính kèm linh hoạt.</li>
+                        <li>Chế độ chỉnh sửa (Edit) bài đăng sau khi xuất bản.</li>
+                        <li>Phân loại nhóm trước khi đăng bài.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Tạo bài viết mới.png" alt="Tạo mới"><div class="gallery-label">Chế độ soạn thảo</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thêm Hình Ảnh.png" alt="Thêm ảnh"><div class="gallery-label">Hỗ trợ đa phương tiện</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thêm tệp đính kèm.png" alt="Tài liệu"><div class="gallery-label">Hệ thống đính kèm</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Edit thông tin và chỉnh sửa bài đăng.png" alt="Chỉnh sửa"><div class="gallery-label">Chỉnh sửa bài viết</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">06 / 20</div>
+    </div>
+
+    <!-- Slide 7: Interaction -->
+    <div class="slide" id="slide7">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" style="grid-column: span 2; aspect-ratio: 16/7;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Bài viết chi tiết & bình luận.png" alt="Chi tiết"><div class="gallery-label">Giao diện phân tích chi tiết</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Expand Bài Viết.png" alt="Expand"><div class="gallery-label">Chế độ tập trung</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Xem Thông Tin Biểu Cảm .png" alt="Reaction"><div class="gallery-label">Chi tiết cảm xúc</div></div>
+                    </div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag">KẾT NỐI</div>
+                    <h2 class="module-title">Tương Tác <span class="gradient-text">Đa Chiều</span></h2>
+                    <p class="module-message">Kế thừa tri thức qua các luồng thảo luận sâu sắc.</p>
+                    <ul class="feature-list">
+                        <li><strong>Biểu cảm bài viết</strong>: Thể hiện cảm xúc đa dạng.</li>
+                        <li><strong>Thảo luận bài viết</strong>: Thảo luận sâu cho từng ý kiến.</li>
+                        <li><strong>Nội dung bài viết</strong>: Xem chi tiết hình ảnh trong bài đăng.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">07 / 20</div>
+    </div>
+
+    <!-- Slide 8: Economy (Remastered Layout) -->
+    <div class="slide" id="slide8">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag" style="color: #f2994a;">HỆ SINH THÁI COIN</div>
+                    <h2 class="module-title">Donation & <span style="color: #f2994a;">Tri Thức Số</span></h2>
+                    <p class="module-message">Công nhận giá trị đóng góp bằng đơn vị HG Coin thực tế.</p>
+                    <ul class="feature-list">
+                        <li><strong>Ví HG </strong>: Quản lý Balance nhận và tặng.</li>
+                        <li><strong>Hệ thống huy hiệu </strong>: Tặng huy hiệu danh giá cho bài viết chất lượng.</li>
+                        <li><strong>Tính minh bạch </strong>: Công khai danh sách người vinh danh.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" style="grid-row: span 2; aspect-ratio: 10/14;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thôn tin ví HG Coin.png" alt="Ví Coin"><div class="gallery-label">Ví của tôi</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Tặng Huy hiệu cho bài viết.png" alt="Tặng badge"><div class="gallery-label">Bảng trao tặng</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Xem chi tiết huy hiệu trong bài viết 2.png" alt="Chi tiết huy hiệu"><div class="gallery-label">Lịch sử trao tặng</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">08 / 20</div>
+    </div>
+
+    <!-- Slide 9: AI History -->
+    <div class="slide" id="slide9">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="img-container" style="aspect-ratio: 16/9; width: 100%;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Tìm kiếm luồng chat cũ trong community chatbot.png" alt="Chat History"><div class="gallery-label">Trung tâm hội thoại AI</div></div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag">AI RETRIEVAL</div>
+                    <h2 class="module-title">Lưu Trữ <span class="gradient-text">Hội Thoại AI</span></h2>
+                    <p class="module-message">Tìm kiếm và tái sử dụng các tri thức đã trao đổi với trợ lý ảo.</p>
+                    <ul class="feature-list">
+                        <li>Hệ thống lưu vết luồng chat thông minh.</li>
+                        <li>Tóm tắt các giải pháp AI đã đề xuất trong quá khứ.</li>
+                        <li>Tích hợp dữ liệu từ mọi bài đăng để trả lời chuẩn xác.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">09 / 20</div>
+    </div>
+
+    <!-- Slide 10: Profile -->
+    <div class="slide" id="slide10">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag">UY TÍN</div>
+                    <h2 class="module-title">Hồ Sơ <span class="gradient-text">Chuyên Gia</span></h2>
+                    <p class="module-message">Khẳng định năng lực cá nhân trong cộng đồng tri thức.</p>
+                    <ul class="feature-list">
+                        <li>Thống kê Badge, lượt React và Bài đăng.</li>
+                        <li>Trang cá nhân chuyên nghiệp hiển thị sở trường.</li>
+                        <li>Kho tài liệu dữ liệu tải lên của cộng đồng chia sẻ.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Profile cá nhân.png" alt="Profile v1"><div class="gallery-label">Hồ sơ người dùng</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Profile cá nhân 2.png" alt="Profile v2"><div class="gallery-label">Thống kê hoạt động</div></div>
+                        <div class="img-container" style="grid-column: span 2; aspect-ratio: 16/6;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Tài Nguyên Dữ Liệu trong nhóm.png" alt="Tài nguyên"><div class="gallery-label">Tài nguyên cá nhân và cộng đồng</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">10 / 20</div>
+    </div>
+
+    <!-- Slide 11: Notification -->
+    <div class="slide" id="slide11">
+        <div class="slide-content">
+            <div class="header-center">
+                <h2>Luôn <span class="gradient-text">Giữ Kết Nối</span></h2>
+                <p>Hệ thống thông báo đẩy giúp bạn không bao giờ bỏ lỡ tri thức quan trọng.</p>
+            </div>
+            <div class="gallery-grid" style="max-width: 1100px; margin: 0 auto;">
+                <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thông báo tin tức mới .png" alt="Others"><div class="gallery-label">Thông báo hệ thống</div></div>
+                <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thông báo: Tin mới.png" alt="Tin mới"><div class="gallery-label">Update từ Cộng đồng</div></div>
+                <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thông Báo: Đề Cập.png" alt="Mention"><div class="gallery-label">Ai đó nhắc tên bạn</div></div>
+                <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thông báo: Bài Đăng Của Tôi.png" alt="My post update"><div class="gallery-label">Phản hồi trên bài của bạn</div></div>
+                
+            </div>
+        </div>
+        <div class="slide-number">11 / 20</div>
+    </div>
+
+    <!-- Slide 12: Section Admin -->
+    <div class="slide cover" id="slide12" style="background: radial-gradient(circle at 100% 100%, #1a0f0a 0%, #000 100%);">
+        <div class="slide-content" style="text-align: center;">
+            <div class="module-tag">Phần Hai</div>
+            <h2 style="font-size: 72px;">Hệ Thống <span style="color: #f2994a;">Quản Trị</span></h2>
+            <p style="font-size: 20px; color: #666; margin-top: 20px;">Vận hành - Kiểm soát - Trả thưởng</p>
+        </div>
+        <div class="slide-number">12 / 20</div>
+    </div>
+
+    <!-- Slide 13: Admin Cycle -->
+    <div class="slide" id="slide13">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Cài đặt chu kỳ 1.png" alt="Cài đặt 1"><div class="gallery-label">Cấu hình thời gian</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Cài đặt chu kỳ 2.png" alt="Cài đặt 2"><div class="gallery-label">Cấp phát ngân sách</div></div>
+                        <div class="img-container" style="grid-column: span 2; aspect-ratio: 16/7;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Cài đặt chu kỳ 3.png" alt="Cài đặt 3"><div class="gallery-label">Cài đặt nâng cao</div></div>
+                    </div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag" style="color: #f2994a;">QUY TRÌNH</div>
+                    <h2 class="module-title">Thiết Lập <span style="color: #f2994a;">Chu Kỳ Hoạt Động</span></h2>
+                    <p class="module-message">Điều phối ngân sách tri thức theo từng quý hoặc chiến dịch.</p>
+                    <ul class="feature-list">
+                        <li>Cài đặt mốc thời gian Bắt đầu/ Kết thúc linh hoạt.</li>
+                        <li>Phát lệnh cấp HG Coin hàng loạt cho nhân viên.</li>
+                        <li>Kiểm soát tính năng Donation theo từng giai đoạn.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">13 / 20</div>
+    </div>
+
+    <!-- Slide 14: Stats -->
+    <div class="slide" id="slide14">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag" style="color: #f2994a;">DỮ LIỆU</div>
+                    <h2 class="module-title">Dashboard <span style="color: #f2994a;">Phân Tích</span></h2>
+                    <p class="module-message">Cái nhìn toàn cảnh về mức độ hoạt động của toàn công ty.</p>
+                    <ul class="feature-list">
+                        <li>Thống kê Bài viết/Bình luận theo thời gian thực.</li>
+                        <li>Theo dõi tỷ lệ gắn kết (Tỷ lệ tương tác).</li>
+                        <li>Phân tích chất lượng tri thức theo nhóm ngành.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="img-container" style="aspect-ratio: 16/9; width: 100%;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thống Kê Hoạt động - Quản trị viên only.png" alt="Stats"><div class="gallery-label">Thông tin thành viên</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">14 / 20</div>
+    </div>
+
+    <!-- Slide 15: Payouts -->
+    <div class="slide" id="slide15">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="img-container" style="aspect-ratio: 16/9; width: 100%;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thống kê Earning - Quản trị viên only.png" alt="Earnings"><div class="gallery-label">Quản lý thanh toán donation</div></div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag" style="color: #f2994a;">QUYẾT TOÁN</div>
+                    <h2 class="module-title">Quản Lý <span style="color: #f2994a;">Thanh Toán Coin</span></h2>
+                    <p class="module-message">Đảm bảo quyền lợi tài chính cho những người đóng góp tích cực.</p>
+                    <ul class="feature-list">
+                        <li>Tổng hợp số coin kiếm được cuối mỗi chu kỳ.</li>
+                        <li>Xuất sang Excel -  phục vụ trả thưởng.</li>
+                        <li>Xác nhận trạng thái thanh toán minh bạch.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">15 / 20</div>
+    </div>
+
+    <!-- Slide 16: Member Admin -->
+    <div class="slide" id="slide16">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-info">
+                    <div class="module-tag" style="color: #f2994a;">ACCESS CONTROL</div>
+                    <h2 class="module-title">Quản Trị <span style="color: #f2994a;">Quyền Truy Cập</span></h2>
+                    <p class="module-message">Phân quyền chuyên sâu để bảo vệ tuyệt đối tài sản tri thức nội bộ.</p>
+                    <ul class="feature-list">
+                        <li>Phê duyệt yêu cầu vào nhóm Private.</li>
+                        <li>Phân quyền Người lãnh đạo/Người điều phối cho từng bộ phận.</li>
+                        <li>Quản lý danh sách nhân sự tham gia hệ thống.</li>
+                    </ul>
+                </div>
+                <div class="module-visual">
+                    <div class="img-container" style="aspect-ratio: 16/9; width: 100%;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Thêm thành viên vào nhóm - Quản trị viên only.png" alt="Manage User"><div class="gallery-label">Quản trị truy cập</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">16 / 20</div>
+    </div>
+
+    <!-- Slide 17: Glory -->
+    <div class="slide" id="slide17">
+        <div class="slide-content">
+            <div class="module-container">
+                <div class="module-visual">
+                    <div class="gallery-grid">
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Phân mục vinh danh .png" alt="Glory 1"><div class="gallery-label">Phân vùng huy hiệu</div></div>
+                        <div class="img-container" onclick="openLightbox(this)"><img src="Thư viện ảnh/Phân mục vinh danh: Thành viên active.png" alt="Glory 2"><div class="gallery-label">Vinh danh thành viên</div></div>
+                        <div class="img-container" style="grid-column: span 2; aspect-ratio: 16/7;" onclick="openLightbox(this)"><img src="Thư viện ảnh/Phân mục vinh danh - bài viết tiêu biểu.png" alt="Glory 3"><div class="gallery-label">Top bài viết nổi bật</div></div>
+                    </div>
+                </div>
+                <div class="module-info">
+                    <div class="module-tag" style="border-color: gold; color: gold;">GLORY</div>
+                    <h2 class="module-title">Sân Khấu <span style="color: gold;">Bảng Vàng Tri Thức</span></h2>
+                    <p class="module-message">Nơi những đóng góp được ghi nhận vào lịch sử của HG Media.</p>
+                    <ul class="feature-list">
+                        <li>Trưng bày bài viết xuất sắc nhất tháng/quý.</li>
+                        <li>Vinh danh top chuyên gia có đóng góp lớn nhất.</li>
+                        <li>Khích lệ văn hóa học tập tự thân toàn công ty.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">17 / 20</div>
+    </div>
+
+    <!-- Slide 18: Ecosystem Vision -->
+    <div class="slide" id="slide18">
+        <div class="slide-content">
+            <div class="header-center">
+                <h2>Hệ Sinh Thái <span class="gradient-text">Tri Thức Vĩnh Cửu</span></h2>
+                <p>Một chu trình khép kín giúp tri thức luôn được bồi đắp và tái sử dụng.</p>
+            </div>
+            <div class="flow-container">
+                <div class="flow-step"><div class="step-num">1</div><h4>Chia sẻ</h4><p style="font-size:12px; color:#888;">Thành viên chia sẻ bài đăng</p></div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step"><div class="step-num">2</div><h4>Xác thực</h4><p style="font-size:12px; color:#888;">Cộng đồng tương tác & Vote</p></div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step"><div class="step-num">3</div><h4>Đúc kết</h4><p style="font-size:12px; color:#888;">AI đúc kết thành kho dữ liệu</p></div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step" style="border-color: #667eea;"><div class="step-num">4</div><h4>Tái sử dụng</h4><p style="font-size:12px; color:#888;">Chatbot hệ thống trả lời tức thì</p></div>
+            </div>
+            <div style="margin-top: 60px; text-align: center; color: #555; font-style: italic;">
+                "HGGPT Community: Chuyển hóa vô hình thành hữu hình."
+            </div>
+        </div>
+        <div class="slide-number">18 / 20</div>
+    </div>
+
+    <!-- Slide 19: Commitment -->
+    <div class="slide" id="slide19">
+        <div class="slide-content">
+            <div class="header-center">
+                <h2>Hiệu Quả <span class="gradient-text">Mong Đợi</span></h2>
+            </div>
+            <div class="feature-grid">
+                <div class="stat-box"><div class="stat-value">60%</div><div class="stat-label">Thành viên tích cực</div></div>
+                <div class="stat-box"><div class="stat-value">&lt; 1h</div><div class="stat-label">Tốc độ phản hồi</div></div>
+                <div class="stat-box"><div class="stat-value">75%</div><div class="stat-label">Tái sử dụng kiến thức</div></div>
+                <div class="stat-box"><div class="stat-value">90%</div><div class="stat-label">Độ chính xác AI</div></div>
+                <div class="stat-box"><div class="stat-value">30%</div><div class="stat-label">Thời gian tiết kiệm</div></div>
+                <div class="stat-box"><div class="stat-value">100%</div><div class="stat-label">Bảo mật dữ liệu</div></div>
+            </div>
+        </div>
+        <div class="slide-number">19 / 20</div>
+    </div>
+
+    <!-- Slide 20: End -->
+    <div class="slide cover" id="slide20">
+        <div class="orb orb-1"></div>
+        <div class="slide-content" style="text-align: center;">
+            <h1 class="gradient-text" style="font-size: 80px;">SỐNG CÙNG TRI THỨC</h1>
+            <p style="font-size: 24px; color: #555; margin-top: 20px;">HGGPT Community dành cho HG Media</p>
+            <div style="margin-top: 100px; font-family: monospace; opacity: 0.3;">NĂM 2026 | PHÁT TRIỂN BỞI ĐỘI NGŨ HG AI</div>
+        </div>
+        <div class="slide-number">20 / 20</div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const navDots = document.getElementById('navDots');
+
+        // Nav Dots
+        slides.forEach((slide, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                slide.scrollIntoView({ behavior: 'smooth' });
+            });
+            navDots.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+        
+        // Active Shadow Logic
+        const observerOptions = { threshold: 0.5 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    slides.forEach(s => s.classList.remove('active'));
+                    entry.target.classList.add('active');
+                    
+                    const index = Array.from(slides).indexOf(entry.target);
+                    dots.forEach(d => d.classList.remove('active'));
+                    dots[index].classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        slides.forEach(slide => observer.observe(slide));
+
+        // Lightbox
+        function openLightbox(container) {
+            const img = container.querySelector('img');
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightboxImg.src = img.src;
+            lightbox.style.display = 'flex';
+            setTimeout(() => lightbox.classList.add('open'), 10);
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('open');
+            setTimeout(() => lightbox.style.display = 'none', 400);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>
